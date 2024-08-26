@@ -1,6 +1,7 @@
 package com.example.webfluxdemo.service.impl;
 
 import com.example.webfluxdemo.models.Item;
+import com.example.webfluxdemo.models.exception.ItemNotFoundException;
 import com.example.webfluxdemo.repository.IItemRepository;
 import com.example.webfluxdemo.service.ItemService;
 import com.example.webfluxdemo.service.dto.ItemDto;
@@ -19,8 +20,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Mono<Item> getById(Long id) {
-        return itemRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("No se encuentra item por id: " + id)));
+        return itemRepository.findById(id);
     }
 
     @Override
@@ -36,11 +36,15 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Mono<Void> deleteById(Long id) {
-        return itemRepository.deleteById(id);
+        return itemRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ItemNotFoundException(id)))
+                .flatMap(item -> itemRepository.deleteById(id));
     }
 
     @Override
     public Mono<Item> update(Item item) {
-        return itemRepository.save(item);
+        return itemRepository.findById(item.getId())
+                .switchIfEmpty(Mono.error(new ItemNotFoundException(item.getId())))
+                .flatMap(existingItem -> itemRepository.save(item));
     }
 }

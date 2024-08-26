@@ -3,9 +3,11 @@ package com.example.webfluxdemo.handlers;
 import com.example.webfluxdemo.models.exception.ItemNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import reactor.core.publisher.Mono;
 
+@ControllerAdvice
 public class GlobalException {
 
     @ExceptionHandler({ItemNotFoundException.class})

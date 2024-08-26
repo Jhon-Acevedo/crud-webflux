@@ -26,7 +26,8 @@ public class ItemController {
     @GetMapping("/{id}")
     @Operation(summary = "Get item by id")
     public Mono<Item> getItemById(@PathVariable Long id) {
-        return itemService.getById(id);
+        return itemService.getById(id)
+                .switchIfEmpty(Mono.error(new ItemNotFoundException(id)));
     }
 
     @GetMapping
@@ -47,6 +48,15 @@ public class ItemController {
         return itemService.deleteById(id)
                 .then(Mono.just(ResponseEntity.noContent().build()))
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update item by id")
+    public Mono<ResponseEntity<Item>> updateItem(@PathVariable Long id, @RequestBody ItemDto itemDto) {
+        Item item = new Item(id, itemDto.name());
+        return itemService.update(item)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
 }
